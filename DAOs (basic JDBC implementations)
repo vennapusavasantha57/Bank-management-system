@@ -1,0 +1,54 @@
+package com.vasantha.bank.dao;
+
+import com.vasantha.bank.model.Customer;
+import com.vasantha.bank.util.DBConnection;
+
+import java.sql.*;
+
+public class CustomerDAO {
+
+    public int createCustomer(Customer customer) {
+        String sql = "INSERT INTO customer (name, address, phone, email, kyc_status) VALUES (?, ?, ?, ?, ?)";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            ps.setString(1, customer.getName());
+            ps.setString(2, customer.getAddress());
+            ps.setString(3, customer.getPhone());
+            ps.setString(4, customer.getEmail());
+            ps.setString(5, customer.getKycStatus());
+            int affected = ps.executeUpdate();
+            if (affected == 0) return -1;
+            try (ResultSet rs = ps.getGeneratedKeys()) {
+                if (rs.next()) {
+                    int id = rs.getInt(1);
+                    customer.setCustomerId(id);
+                    return id;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return -1;
+    }
+
+    public Customer findById(int id) {
+        String sql = "SELECT * FROM customer WHERE customer_id = ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Customer c = new Customer();
+                    c.setCustomerId(rs.getInt("customer_id"));
+                    c.setName(rs.getString("name"));
+                    c.setAddress(rs.getString("address"));
+                    c.setPhone(rs.getString("phone"));
+                    c.setEmail(rs.getString("email"));
+                    c.setKycStatus(rs.getString("kyc_status"));
+                    return c;
+                }
+            }
+        } catch (SQLException e) { e.printStackTrace(); }
+        return null;
+    }
+}

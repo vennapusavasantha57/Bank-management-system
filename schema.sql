@@ -1,0 +1,30 @@
+CREATE DATABASE IF NOT EXISTS bank_db;
+USE bank_db;
+
+CREATE TABLE IF NOT EXISTS customer (
+  customer_id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  address VARCHAR(255),
+  phone VARCHAR(20),
+  email VARCHAR(100),
+  kyc_status VARCHAR(50)
+);
+
+CREATE TABLE IF NOT EXISTS account (
+  account_no BIGINT PRIMARY KEY,
+  customer_id INT NOT NULL,
+  account_type ENUM('SAVINGS','CURRENT','FD') DEFAULT 'SAVINGS',
+  balance DECIMAL(15,2) DEFAULT 0.00,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (customer_id) REFERENCES customer(customer_id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS transaction_record (
+  txn_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  account_no BIGINT NOT NULL,
+  txn_type ENUM('DEPOSIT','WITHDRAW','TRANSFER') NOT NULL,
+  amount DECIMAL(15,2) NOT NULL,
+  txn_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  remarks VARCHAR(255),
+  FOREIGN KEY (account_no) REFERENCES account(account_no) ON DELETE CASCADE
+);
